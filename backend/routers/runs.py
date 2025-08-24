@@ -3,11 +3,13 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 from ..db_sa import get_db
 from ..models import AgentRun
 from ..services.portia_factory import make_portia
 from sqlalchemy import func, Integer, cast
+import logging
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
@@ -28,6 +30,8 @@ class AgentRunOut(BaseModel):
     success: bool
     cost_usd: float
     calls: int
+    started_at: Optional[datetime]
+    ended_at: Optional[datetime]
 
     class Config:
         from_attributes = True
@@ -55,9 +59,10 @@ async def start_run(body: StartRunRequest, bg: BackgroundTasks, db: Session = De
                 portia.run(run.prompt)
                 # If no exception, consider success
                 run.success = True
-            except Exception:
+            except Exception as e:
                 # Failure
                 run.success = False
+                logging.exception("Run %s failed in background task: %s", run_id, e)
             finally:
                 # Always set end and duration
                 run.ended_at = datetime.utcnow()

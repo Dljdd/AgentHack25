@@ -19,6 +19,8 @@ type Run = {
   success: boolean
   cost_usd: number
   calls: number
+  started_at?: string | null
+  ended_at?: string | null
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -63,8 +65,10 @@ export default function App() {
     try {
       const data = await api<Run[]>(`/runs/by_customer/${cid}`)
       setRuns(data)
+      return data
     } catch (e) {
       console.error(e)
+      return [] as Run[]
     }
   }
 
@@ -103,7 +107,7 @@ export default function App() {
     setLoading(true)
     setError(null)
     try {
-      await api('/runs/start', {
+      const started = await api<Run>('/runs/start', {
         method: 'POST',
         body: JSON.stringify({
           customer_id: selectedCustomerId,
@@ -112,10 +116,23 @@ export default function App() {
           model: 'google/gemini-2.0-flash',
         }),
       })
-      // small delay to allow background to update
-      setTimeout(() => {
-        if (typeof selectedCustomerId === 'number') loadRuns(selectedCustomerId)
-      }, 500)
+      // Auto-poll runs until this run completes or timeout
+      const runId = (started as any)?.id as number | undefined
+      let attempts = 0
+      const maxAttempts = 12 // ~12s
+      const poll = async () => {
+        if (typeof selectedCustomerId !== 'number') return
+        const latest = await loadRuns(selectedCustomerId)
+        attempts += 1
+        if (runId) {
+          const r = latest.find((r) => r.id === runId)
+          if (r && r.ended_at) return // completed
+        }
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 1000)
+        }
+      }
+      setTimeout(poll, 700)
     } catch (e: any) {
       setError(e?.message || 'Failed to start run')
     } finally {
@@ -231,7 +248,7 @@ export default function App() {
                     <td>#{r.id}</td>
                     <td>{r.provider || '—'}</td>
                     <td>{r.model || '—'}</td>
-                    <td>{r.success ? 'Yes' : 'No'}</td>
+                    <td>{!r.ended_at ? 'Pending' : r.success ? 'Yes' : 'No'}</td>
                     <td>{r.calls}</td>
                     <td>${r.cost_usd.toFixed(4)}</td>
                   </tr>
