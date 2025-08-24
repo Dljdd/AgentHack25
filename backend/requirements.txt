@@ -1,0 +1,17 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+pydantic-settings>=2.4.0
+SQLAlchemy>=2.0.0
+alembic>=1.13.0
+psycopg2-binary>=2.9.9
+stripe>=10.4.0
+redis>=5.0.0
+celery>=5.3.0
+email-validator>=2.2.0
+
+# Optional: Portia SDK — only needed if you plan to demo the Portia stub working.
+# If published on PyPI, use (adjust version as appropriate):
+# portia-sdk-python>=0.1.0
+# Otherwise install from GitHub (uncomment the next line to install via pip):
+# git+https://github.com/portiaAI/portia-sdk-python.git

@@ -1,0 +1,48 @@
+# --- Python / FastAPI ---
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Byte-compiled / logs
+*.log
+
+# Local environment & secrets
+.env
+.env.*
+
+# SQLite or local DB files (if any)
+*.db
+*.sqlite
+*.sqlite3
+app.db
+
+# IDE/editor
+.DS_Store
+.idea/
+.vscode/
+
+# --- Alembic ---
+# Keep migrations in git. Do NOT ignore the alembic/ directory.
+# If you generate cache or temp files, ignore them here:
+alembic/*cache*/
+
+# --- Node / Frontend (Vite) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.eslintcache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Playwright artifacts
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.cache/
